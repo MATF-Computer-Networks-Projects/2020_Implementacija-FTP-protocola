@@ -10,7 +10,14 @@
 #include <cstring>
 #include <iostream>
 
+class Socket {
+	public:
+		Socket();
+	private:
 
+
+
+};
 int converse(int sockfd);
 int acceptFile(int sockfd);
 
@@ -63,12 +70,7 @@ int main(){
 	acceptFile(sockfd);
 
 	return 0;
-
-	
-
-
-
-	}
+		}
 
 
 int converse(int sockfd){

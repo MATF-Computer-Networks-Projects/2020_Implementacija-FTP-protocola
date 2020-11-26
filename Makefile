@@ -1,14 +1,17 @@
 CXX = g++
 
 client server: ftpClient.cpp ftpServer.cpp
-	$(CXX) ftpServer.cpp -o server
-	$(CXX) ftpClient.cpp -o client
+	$(CXX) server.cpp -o server
+	$(CXX) client.cpp -o client
 	
 
 
 
 .PHONY:
-	clean
+	clean run
 
 clean:
 	rm -rf client server
+
+run:
+	make clean && make
