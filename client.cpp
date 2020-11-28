@@ -1,6 +1,6 @@
 #include "./socket.cpp"
 
-
+#include <fstream>
 
 class Client{
 public:
@@ -31,9 +31,24 @@ bool Client::closeConnection() const{
 	return 0;
 
 }
-
+//bez ikakve provere da li fajl moze da se posalje mozda uvesti neka ogranicenja
 bool Client::requestFile(const std::string &file_name) const{
 	connection_socket.sendData("GET " + file_name);
+
+	std::ofstream file;
+	file.open(file_name + "_1");
+	
+	while(1){
+		
+		std::string line(connection_socket.recvData());
+		std::cout << line;
+		file << line;
+		if(line == "")
+			break;
+	}
+	
+
+	file.close();
 	return 0;
 
 }

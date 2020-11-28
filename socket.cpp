@@ -26,15 +26,18 @@ class Socket {
 		void closeConnection()const;
 		bool acceptNewConnection();
 		std::string recvData()const;
+		int get_file_descriptor()const;
+		int get_sock_fd()const;
 	private:
-		int dataFd;
+		int dataFd, sockFd;
 		std::string IP;
 		unsigned port;
 	
 };
 
 
-
+int Socket::get_file_descriptor()const { return dataFd;}
+int Socket::get_sock_fd()const { return sockFd;}
 
 bool Socket::connect(const std::string &IP, unsigned port){
 
@@ -86,7 +89,7 @@ bool Socket::acceptNewConnection(){
 	struct addrinfo *p;
 	std::stringstream port_str;
 
-	int sockfd;
+	//int sockfd;
 	memset(&hints, 0, sizeof hints);
 	hints.ai_family=AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
@@ -100,11 +103,11 @@ bool Socket::acceptNewConnection(){
 		std::cout << "Obilazak";
 
 
-                if ((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1) {
+                if ((this->sockFd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1) {
 			std::cout << "server: socket";
                         continue;
                 }
-                if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
+                if (setsockopt(this->sockFd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
 			std::cout << "server: setsocketoption";
 			continue;
                 }
@@ -113,8 +116,8 @@ bool Socket::acceptNewConnection(){
 		std::cout << p->ai_addr->sa_data << '\n';
 
 
-               if (::bind(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
-                        close(sockfd);
+               if (::bind(this->sockFd, p->ai_addr, p->ai_addrlen) == -1) {
+                        close(this->sockFd);
 
 			std::cout << "server: bind";
                 }
@@ -124,7 +127,7 @@ bool Socket::acceptNewConnection(){
         }
 		
 
-	std::cout << sockfd;
+	//std::cout << sockfd;
         if (p == NULL) {
                 fprintf(stderr, "server: failed to bind\n");
                 return 2;
@@ -132,7 +135,7 @@ bool Socket::acceptNewConnection(){
 	//sockfd je soket zaduzen da slusa za povezivanje sa remote socketima
 	
 	std::cout << "Server:listening\n";
-	if(int listenRvalue = listen(sockfd, BACKLOG)){
+	if(int listenRvalue = listen(this->sockFd, BACKLOG)){
 		std::cout << "listen failed:";// << listenRvalue;
 		perror("listen failed");
 	}
@@ -140,19 +143,21 @@ bool Socket::acceptNewConnection(){
 	int connfd;
 	sockaddr cli;
 	socklen_t len = sizeof(cli);
-	connfd = accept(sockfd, &cli, &len);
-	this->dataFd = connfd;
+	connfd = accept(this->sockFd, &cli, &len);
+	this->dataFd = connfd; //ovo je file descriptor na accept
 
 	return true;
 	}
 
+
+//da ispravimo da vrati kolicinu primljenih podataka
 std::string Socket::recvData() const {
 	
 	char buff[BUFFSIZE];
 	bzero(buff, sizeof(buff));
 	read(dataFd, buff, sizeof(buff));
 	
-	std::cout << "ispis" << std::string(buff);
+	//std::cout << "ispis" << std::string(buff);
 	return std::string(buff);
 }
 
