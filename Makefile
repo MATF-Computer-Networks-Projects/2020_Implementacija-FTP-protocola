@@ -11,7 +11,7 @@ client server: ftpClient.cpp ftpServer.cpp
 	clean run
 
 clean:
-	rm -rf client server
+	rm -rf client server encriptor
 
 run:
 	make clean && make
