@@ -1,13 +1,14 @@
 #include "./socket.cpp"
 
 #include <fstream>
-
+#include <map>
 class Client{
 public:
 	bool connect(const std::string& IP, const unsigned port);
 	unsigned sendData(const std::string &msg)const;
 	bool closeConnection() const;
 	bool requestFile(const std::string &file_name)const;
+	bool handshake()const;
 private:
 	Socket connection_socket;
 };
@@ -39,7 +40,6 @@ bool Client::requestFile(const std::string &file_name) const{
 	file.open(file_name + "_1");
 	unsigned steps = 0;
 	while(1){
-		
 		std::string line(connection_socket.recvdata());//nije da ovo blokira proces
 
 		//fora je sto se ovo nikad nece desiti 
@@ -79,7 +79,64 @@ bool Client::requestFile(const std::string &file_name) const{
 
 }
 
+//ovo ce biti implementirano po koracima sa openssl 
 
+bool Client::handshake() const {
+
+	std::string private_key = "client_pr1v4t3_k3y";
+	std::string public_key = "client_publ1c_k3y";
+	//phase 1
+	unsigned r = rand() % 360;
+	std::map<std::string, std::string> struct_message;
+
+	struct_message["hello_msg"] = "hello server";
+	struct_message["random"] = std::__cxx11::to_string(r);
+	struct_message["protocol"] = "1";
+	struct_message["encription"] = "1";
+
+	sendData("HELLO:HELLO SERVER;PROTOCOL:1; RANDOM:" + std::__cxx11::to_string(r) + ";ENCRIPTION:1");
+
+	std::string hello_server = connection_socket.recvData();
+	
+	std::cout << hello_server << '\n';
+	
+
+	//ovde ide obrada hello_server
+	if(hello_server.substr(0, 5)=="HELLO"){
+			//todo
+	}else{
+		return false;
+	}
+
+	//phase 1 end
+	
+	//phase 2
+	//
+	
+	std::string certificate_msg = connection_socket.recvData();
+
+	std::cout << certificate_msg;
+	//todo check certificate
+	//ako je sve ok saljem nazad svoj sertifikat
+	
+
+	//phase 2  end 
+	
+
+	//phase 3 
+	sendData("CERTIFICATE:client_certificate;public_key:" + public_key  );
+	
+	// hash
+
+
+	sendData("HASHED DATA WITH CLIENTS PRIVATE KEY");
+
+
+
+
+
+	return true;
+}
 
 int main(int argc, char *argv[]){
 	
@@ -92,11 +149,18 @@ int main(int argc, char *argv[]){
 	Client c;
 
 	c.connect("127.0.0.1", 8000);
-
-	c.requestFile("input.txt");
 	
 
-	std::cout << "posle request file";
+	//posle uspesne konekcije ide protokol uspostavljanja data socketa sa
+	//serverom
+	if(c.handshake()){
+		std::cout << "\n\nSuccessfull handshake\n";
+	}
+
+
+	//c.requestFile("input.txt");
+	
+
 	c.closeConnection();
 	return 0;
 }

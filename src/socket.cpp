@@ -153,8 +153,8 @@ std::string Socket::recvData() const {
 	bzero(buff, sizeof(buff));
 	unsigned chars_read = read(dataFd, buff, sizeof(buff));
 	
-	std::cout << "socket:buff=" << buff << "]\n";
-	std::cout << "Soket procitani karakteri: " << chars_read;
+	//std::cout << "socket:buff=" << buff << "]\n";
+	///std::cout << "Soket procitani karakteri: " << chars_read;
 	if(chars_read==0) return "";
 
 	return std::string(buff);

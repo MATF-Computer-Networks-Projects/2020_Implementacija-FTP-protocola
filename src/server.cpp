@@ -12,12 +12,14 @@ class Server {
 	
 public:
 	bool acceptNewClient();
-	void sendData(const std::string &msg);
-	void recvData();
+	void sendData(const std::string &msg)const;
+	void recvData()const;
 	void serveClients();
 	void closeServer();
 	Socket getSocket()const;
 	void accept();
+	void accept_client();
+	bool handshake()const;
 private:
 	Socket connection_socket;
 	unsigned free_port = 8000;
@@ -46,7 +48,7 @@ void Server::closeServer(){
 
 
 }
-void Server::sendData(const std::string &msg){
+void Server::sendData(const std::string &msg)const{
 	connection_socket.sendData(msg);
 }
 
@@ -136,6 +138,66 @@ void Server::accept(){
 
 }
 
+void Server::accept_client(){
+	connection_socket.accept();
+	
+	if(handshake()){
+		std::cout << "\n\nSuccessfull handshake\n";
+	}
+
+}
+
+bool Server::handshake() const {
+	
+	std::string private_key = "server_pr1v4t3_k3y";
+	std::string public_key = "server_pubL1c_k3y";
+
+	//phase 1
+	std::string hello_client = connection_socket.recvData();
+
+	std::cout << "Hello from client: " << hello_client;
+
+	//ovde se parsira hello_client i dobiju se informacije o tome koji se
+	//algoritam koristi za enkripciju i Rand number za generisanje kljuca 
+	//
+	if(hello_client.substr(0,5)=="HELLO"){
+	
+	}else{
+		return false;
+	}
+	
+	unsigned r = rand() % 360;
+
+	sendData("HELLO:HELLO CLIENT;PROTOCOL:1; RANDOM:" + std::__cxx11::to_string(r) + ";ENCRIPTION:1");
+
+	//phase 1 end
+	
+	//phase 2
+	sendData("CERTIFICATE:server_certificate;public_key:" + public_key + ";REQUEST:certificate");
+	
+	
+	//phase 2 end 
+	//
+	
+	//phase 3
+	std::string client_certificate = connection_socket.recvData();
+
+	std::cout << client_certificate;
+	
+	//todo check client certificate
+
+
+	std::string hashed_data = connection_socket.recvData();
+
+
+	std::cout <<"\nhashed data:" << hashed_data;
+
+
+
+
+	return true;
+}
+
 int main(){
 	Server server;
 	
@@ -143,7 +205,7 @@ int main(){
 	server.getSocket().listen();
 
 	while(1){
-		server.accept();
+		server.accept_client();
 	}
 	server.closeServer();
 	return 0;
