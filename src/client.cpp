@@ -1,12 +1,14 @@
 #include "./socket.cpp"
-
 #include <fstream>
 #include <map>
+
+
+
 class Client{
 public:
 	bool connect(const std::string& IP, const unsigned port);
-	unsigned sendData(const std::string &msg)const;
 	bool closeConnection() const;
+	unsigned sendData(const std::string & data)const;
 	bool requestFile(const std::string &file_name)const;
 	bool handshake()const;
 private:
@@ -19,11 +21,16 @@ bool Client::connect(const std::string& IP, const unsigned port){
 	return true;
 }
 
-
-unsigned Client::sendData(const std::string &msg)const{
-	connection_socket.sendData(msg);
+/*
+unsigned Client::sendData(const json & data)const{
+	connection_socket.sendData(data);
 	return 0;
+}*/
 
+
+unsigned Client::sendData(const std::string &data)const{
+	connection_socket.sendData(data);
+	return 0;
 }
 
 
@@ -38,7 +45,6 @@ bool Client::requestFile(const std::string &file_name) const{
 
 	std::ofstream file;
 	file.open(file_name + "_1");
-	unsigned steps = 0;
 	while(1){
 		std::string line(connection_socket.recvdata());//nije da ovo blokira proces
 
@@ -87,14 +93,16 @@ bool Client::handshake() const {
 	std::string public_key = "client_publ1c_k3y";
 	//phase 1
 	unsigned r = rand() % 360;
-	std::map<std::string, std::string> struct_message;
-
+	//std::map<std::string, std::string> struct_message;
+	json struct_message;
 	struct_message["hello_msg"] = "hello server";
 	struct_message["random"] = std::__cxx11::to_string(r);
 	struct_message["protocol"] = "1";
 	struct_message["encription"] = "1";
-
-	sendData("HELLO:HELLO SERVER;PROTOCOL:1; RANDOM:" + std::__cxx11::to_string(r) + ";ENCRIPTION:1");
+	
+	std::cout << struct_message.dump();
+	sendData(struct_message.dump());
+	//sendData("HELLO:HELLO SERVER;PROTOCOL:1; RANDOM:" + std::__cxx11::to_string(r) + ";ENCRIPTION:1");
 
 	std::string hello_server = connection_socket.recvData();
 	
@@ -105,7 +113,7 @@ bool Client::handshake() const {
 	if(hello_server.substr(0, 5)=="HELLO"){
 			//todo
 	}else{
-		return false;
+		//return false;
 	}
 
 	//phase 1 end
@@ -124,11 +132,15 @@ bool Client::handshake() const {
 	
 
 	//phase 3 
-	sendData("CERTIFICATE:client_certificate;public_key:" + public_key  );
+	json cert_key = {
+		{"certificate","client_certificate"},
+		{"public_key", public_key}
+	};
+	sendData(cert_key.dump());
 	
 	// hash
 
-
+	
 	sendData("HASHED DATA WITH CLIENTS PRIVATE KEY");
 
 
@@ -137,8 +149,7 @@ bool Client::handshake() const {
 
 	return true;
 }
-
-int main(int argc, char *argv[]){
+int main(){
 	
 	/*
 	if(argc!=3){
@@ -149,13 +160,14 @@ int main(int argc, char *argv[]){
 	Client c;
 
 	c.connect("127.0.0.1", 8000);
+	json msg = {
+		{"status", "peraMitic"}
+	};
 	
-
+	c.sendData(msg.dump());
 	//posle uspesne konekcije ide protokol uspostavljanja data socketa sa
 	//serverom
-	if(c.handshake()){
-		std::cout << "\n\nSuccessfull handshake\n";
-	}
+	if(c.handshake()){std::cout << "\n\nSuccessfull handshake\n";}
 
 
 	//c.requestFile("input.txt");

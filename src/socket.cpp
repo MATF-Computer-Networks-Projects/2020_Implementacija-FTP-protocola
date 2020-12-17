@@ -9,7 +9,7 @@
 #include <sstream>
 #include <cstring>
 #include <iostream>
-
+#include <nlohmann/json.hpp>
 
 //server postavi port neki i onda client da bi se konektovao mora da pogodi taj
 //port
@@ -18,10 +18,14 @@
 #define BACKLOG 5
 #define BUFFSIZE 80
 
+
+using namespace nlohmann;
+
 class Socket {
 	public:
 		bool connect(const std::string &IP, unsigned port);
 		unsigned sendData(const std::string &msg)const;
+		unsigned sendData(const json & data)const;
 		void closeConnection()const;
 		bool bind(std::string port);
 		std::string recvData()const;
@@ -44,7 +48,7 @@ int Socket::get_sock_fd()const { return sockFd;}
 
 bool Socket::connect(const std::string &IP, unsigned port){
 
-	struct addrinfo *adinfo, hints, *servinfo;	
+	struct addrinfo  hints, *servinfo;	
 	struct addrinfo *p;
 	std::stringstream port_str;
 
@@ -75,10 +79,24 @@ bool Socket::connect(const std::string &IP, unsigned port){
 	return true;
 }
 unsigned Socket::sendData(const std::string &msg)const {
-	const char *buff = new char [msg.length()];
+	//const char *buff = new char [msg.length()];
 	//prepisati poruku u buffer, pa buffer spakovati
+	//
 	std::cout << "sock:sendData():" << msg << "..buff\n\n";
 	if(send(dataFd, msg.c_str(),msg.length(), 0) < 0){
+		perror("send:failed");
+		return -1;		
+	}
+
+	return 0;
+}
+
+unsigned Socket::sendData(const json &data)const {
+	
+	std::string json_string(data.dump());
+	
+	std::cout << "sock:sendData(json):";
+	if(send(dataFd, json_string.c_str() ,json_string.length(), 0) < 0){
 		perror("send:failed");
 		return -1;		
 	}
@@ -91,7 +109,7 @@ void Socket::closeConnection()const{
 }
 bool Socket::bind(std::string port){
 	
-	struct addrinfo *adinfo, hints, *servinfo;	
+	struct addrinfo hints, *servinfo;	
 	struct addrinfo *p;
 	std::stringstream port_str;
 
@@ -102,7 +120,7 @@ bool Socket::bind(std::string port){
 	hints.ai_flags = AI_PASSIVE;
 	const char * str_port = port.c_str();
 	
-	int rv = getaddrinfo(NULL, str_port, &hints, &servinfo);
+	getaddrinfo(NULL, str_port, &hints, &servinfo);
 	int yes;
         for(p = servinfo; p != NULL; p = p->ai_next) {
 
@@ -162,7 +180,7 @@ std::string Socket::recvData() const {
 char * Socket::recvdata() const {
 	
 	char *buff = new char [BUFFSIZE];
-	bzero(buff, sizeof(buff));
+	bzero(buff, BUFFSIZE);
 	unsigned chars_read = read(dataFd, buff, sizeof(buff));
 	
 	std::cout << "socket:buff=[" << buff << "]\n";
@@ -183,7 +201,7 @@ char * Socket::recvdata() const {
 
 void Socket::listen()const{
 	printf("Server listening ");
-	if(int listenRvalue = ::listen(this->sockFd, BACKLOG)){
+	if(::listen(this->sockFd, BACKLOG) < 0){
 		std::cout << "listen failed:";// << listenRvalue;
 		perror("listen failed");
 	}

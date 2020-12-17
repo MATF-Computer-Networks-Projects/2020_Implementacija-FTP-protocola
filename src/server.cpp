@@ -12,7 +12,8 @@ class Server {
 	
 public:
 	bool acceptNewClient();
-	void sendData(const std::string &msg)const;
+	void sendData(const std::string &data);
+	unsigned sendData(const json &data)const;
 	void recvData()const;
 	void serveClients();
 	void closeServer();
@@ -48,10 +49,14 @@ void Server::closeServer(){
 
 
 }
-void Server::sendData(const std::string &msg)const{
-	connection_socket.sendData(msg);
+unsigned Server::sendData(const json &data)const{
+	connection_socket.sendData(data);
+	return 0;
 }
 
+void Server::sendData(const std::string &data){
+	connection_socket.sendData(data);
+}
 Socket Server::getSocket()const {
 	return connection_socket;
 }
@@ -101,7 +106,7 @@ void Server::accept(){
 
 		while(!file.eof()){
 			
-			bzero(buffer, sizeof buffer);
+			bzero(buffer, BUFFSIZE);
 			file.read(buffer, BUFFSIZE);
 			//if(file.gcount()==0)break;
 			
@@ -141,6 +146,10 @@ void Server::accept(){
 void Server::accept_client(){
 	connection_socket.accept();
 	
+	std::string da = connection_socket.recvData();
+
+	std::cout << da;
+
 	if(handshake()){
 		std::cout << "\n\nSuccessfull handshake\n";
 	}
@@ -159,21 +168,41 @@ bool Server::handshake() const {
 
 	//ovde se parsira hello_client i dobiju se informacije o tome koji se
 	//algoritam koristi za enkripciju i Rand number za generisanje kljuca 
-	//
+
+	auto hello_client_struct = json::parse(hello_client);
+	
+	std::cout << hello_client_struct["hello_msg"];
+	
+
 	if(hello_client.substr(0,5)=="HELLO"){
 	
 	}else{
-		return false;
+		//return false;
 	}
 	
 	unsigned r = rand() % 360;
-
-	sendData("HELLO:HELLO CLIENT;PROTOCOL:1; RANDOM:" + std::__cxx11::to_string(r) + ";ENCRIPTION:1");
+	
+ 	json to_client = {
+		{"hello_msg", "hello_client"},
+		{"protocol", 1},
+		{"random", r},
+		{"encription", 1}
+	};
+	sendData(to_client.dump());
+	//sendData("HELLO:HELLO CLIENT;PROTOCOL:1; RANDOM:" + std::__cxx11::to_string(r) + ";ENCRIPTION:1");
 
 	//phase 1 end
 	
 	//phase 2
-	sendData("CERTIFICATE:server_certificate;public_key:" + public_key + ";REQUEST:certificate");
+	//
+	json cert_key = {
+		{"certificate","server_certificate"},
+		{"public_key", public_key},
+		{"request", "certificate"}
+	};
+	sendData(cert_key.dump());
+
+	//sendData("CERTIFICATE:server_certificate;public_key:" + public_key + ";REQUEST:certificate");
 	
 	
 	//phase 2 end 
