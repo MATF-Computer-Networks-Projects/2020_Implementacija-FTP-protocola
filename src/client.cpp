@@ -103,17 +103,19 @@ bool Client::handshake() const {
 	std::cout << struct_message.dump();
 	sendData(struct_message.dump());
 	//sendData("HELLO:HELLO SERVER;PROTOCOL:1; RANDOM:" + std::__cxx11::to_string(r) + ";ENCRIPTION:1");
-
-	std::string hello_server = connection_socket.recvData();
 	
-	std::cout << hello_server << '\n';
+	std::string recvd = connection_socket.recvData();
+	std::cout << "recvd:[" << recvd;
+	auto hello_server_struct = json::parse(recvd);
+	return 0;
 	
 
 	//ovde ide obrada hello_server
-	if(hello_server.substr(0, 5)=="HELLO"){
-			//todo
+	if(hello_server_struct["hello_msg"]=="hello_client"){	
+		std::cout << hello_server_struct["hello_msg"] << '\n';
 	}else{
-		//return false;
+		std::cout << "Server hello msg error\n";
+		return -1;
 	}
 
 	//phase 1 end
@@ -160,11 +162,7 @@ int main(){
 	Client c;
 
 	c.connect("127.0.0.1", 8000);
-	json msg = {
-		{"status", "peraMitic"}
-	};
 	
-	c.sendData(msg.dump());
 	//posle uspesne konekcije ide protokol uspostavljanja data socketa sa
 	//serverom
 	if(c.handshake()){std::cout << "\n\nSuccessfull handshake\n";}

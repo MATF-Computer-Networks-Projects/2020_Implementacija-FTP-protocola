@@ -2,7 +2,7 @@
 
 #include <fstream>
 #include <arpa/inet.h>
-#define BUFFSIZE 80
+#define BUFFSIZE 255
 
 //na jednom socketu se uspostavlja konekcija i ide razmena poruka i kljuceva i
 //onda kada to prodje uspesno kreira se sa obe strane data socket kojim se
@@ -146,11 +146,9 @@ void Server::accept(){
 void Server::accept_client(){
 	connection_socket.accept();
 	
-	std::string da = connection_socket.recvData();
 
-	std::cout << da;
 
-	if(handshake()){
+	if(handshake()>0){
 		std::cout << "\n\nSuccessfull handshake\n";
 	}
 
@@ -171,22 +169,22 @@ bool Server::handshake() const {
 
 	auto hello_client_struct = json::parse(hello_client);
 	
-	std::cout << hello_client_struct["hello_msg"];
 	
 
-	if(hello_client.substr(0,5)=="HELLO"){
-	
+	if(hello_client_struct["hello_msg"]=="hello server"){
+		std::cout << hello_client_struct["hello_msg"];
 	}else{
-		//return false;
+		std::cout << "Client hello msg error\n";
+		return -1;
 	}
 	
 	unsigned r = rand() % 360;
 	
  	json to_client = {
 		{"hello_msg", "hello_client"},
-		{"protocol", 1},
-		{"random", r},
-		{"encription", 1}
+		{"protocol", "1"},
+		{"random", "r"},
+		{"encription", "1"}
 	};
 	sendData(to_client.dump());
 	//sendData("HELLO:HELLO CLIENT;PROTOCOL:1; RANDOM:" + std::__cxx11::to_string(r) + ";ENCRIPTION:1");

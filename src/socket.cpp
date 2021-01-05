@@ -10,13 +10,13 @@
 #include <cstring>
 #include <iostream>
 #include <nlohmann/json.hpp>
-
+#include "encriptor.cpp"
 //server postavi port neki i onda client da bi se konektovao mora da pogodi taj
 //port
 //client mora da unese neki port ako hoce da se konektuje na server
 
 #define BACKLOG 5
-#define BUFFSIZE 80
+#define BUFFSIZE 255
 
 
 using namespace nlohmann;

@@ -1,11 +1,11 @@
 CXX = g++
-CXXFLAGS = -Wall -Wextra
+CXXFLAGS = -Wall -Wextra --std=c++17
 
 
-client server: client.o server.o
+client server encriptor: client.o server.o encriptor.o
 	$(CXX) $(CXXFLAGS) client.o -o client
 	$(CXX) $(CXXFLAGS) server.o -o server
-
+	$(CXX) $(CXXFLAGS) encriptor.o -o encriptor
 
 client.o: src/client.cpp headers/client.hpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
