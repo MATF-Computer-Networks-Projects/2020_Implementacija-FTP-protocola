@@ -99,10 +99,13 @@ unsigned Socket::sendData(const json &data)const {
 	log("sendData(json):");
 	log(data);
 	//da li je definisan encriptor i ako jeste onda sifruj poruke
-	std::string enc_msg(theE->encrypt(json_string));
+	std::string enc_msg(theE->encrypt_c(json_string));
 	log(enc_msg); //enkriptovana poruka ne moze da stigne 
 	log("posle dekrpicije");
 	log(theE->decrypt(enc_msg));
+	log("enc msg .c_str():");
+	log("encript_c");
+	log(theE->encrypt_c(json_string));
 	if(send(dataFd, json_string.c_str() ,json_string.length(), 0) < 0){
 		perror("send:failed");
 		return -1;		

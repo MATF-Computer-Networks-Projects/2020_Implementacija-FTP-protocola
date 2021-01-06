@@ -147,7 +147,6 @@ void Server::accept_client(){
 	connection_socket.accept();
 	
 
-
 	if(handshake()>0){
 		std::cout << "\n\nSuccessfull handshake\n";
 	}
@@ -167,7 +166,6 @@ bool Server::handshake() {
 	log(hello_client);
 	//ovde se parsira hello_client i dobiju se informacije o tome koji se
 	//algoritam koristi za enkripciju i Rand number za generisanje kljuca 
-
 	auto hello_client_struct = json::parse(hello_client);
 	
 
@@ -190,15 +188,14 @@ bool Server::handshake() {
 		{"hello_msg", "hello_client"},
 		{"protocol", "1"},
 		{"random", "r"},
-		{"encription", "1"}
+		{"encription", "1"},
+		{"ugly", "%!@$#%^&*()''"}
 	};
 	sendData(to_client);
-	//sendData("HELLO:HELLO CLIENT;PROTOCOL:1; RANDOM:" + std::__cxx11::to_string(r) + ";ENCRIPTION:1");
 
 	//phase 1 end
 	
 	//phase 2
-	//
 	json cert_key = {
 		{"certificate","server_certificate"},
 		{"public_key", public_key},

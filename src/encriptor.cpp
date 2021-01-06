@@ -9,7 +9,9 @@ class Encriptor{
 	public: 
 		virtual std::string encrypt(const std::string &text)const = 0;
 		virtual std::string decrypt(const std::string &text)const = 0;
-	
+		virtual	char * encrypt_c(const std::string &text)const = 0;
+		virtual char * decrypt_c(const std::string &text)const = 0;
+			
 
 };
 
@@ -26,7 +28,8 @@ class CesarEncriptor : public Encriptor {
 		
 		std::string encrypt(const std::string &text)const;
 		std::string decrypt(const std::string &text)const;
-
+		char * encrypt_c(const std::string &text)const;
+		char * decrypt_c(const std::string &text)const;
 	private:
 		unsigned _shift, _total;
 };
@@ -57,6 +60,33 @@ std::string CesarEncriptor::decrypt(const std::string &text)const {
 }
 
 
+char* CesarEncriptor::encrypt_c(const std::string &text)const {
+
+	std::string encripted_msg;
+	char *text_c = new char[text.length()];
+	
+	for(unsigned i=0;i<text.length();i++){
+		text_c[i] = (text[i] + _shift) % _total;
+	}
+	/*std::transform(text.cbegin(), text.cend(), back_inserter(encripted_msg), [this](char c){
+		return (c + _shift) % _total;
+	});*/
+	std::cout << text_c;
+
+	return text_c;
+}
+
+char* CesarEncriptor::decrypt_c(const std::string &text)const {
+
+	std::string decripted_msg;
+
+	std::transform(text.cbegin(), text.cend(), back_inserter(decripted_msg), [this](char c){
+		return (c - _shift) % _total;
+	});
+	
+
+	return "";
+}
 class RSAEncriptor : public Encriptor {
 	public:
 		RSAEncriptor(unsigned P, unsigned Q):_P(P), _Q(Q){
@@ -75,7 +105,9 @@ class RSAEncriptor : public Encriptor {
 		
 		std::string encrypt(const std::string &text)const;
 		std::string decrypt(const std::string &text)const;
-
+		
+		char * encrypt_c(const std::string &text)const {}
+		char * decrypt_c(const std::string &text)const {}
 	private:
 		void getEncriptionKey();
 		
