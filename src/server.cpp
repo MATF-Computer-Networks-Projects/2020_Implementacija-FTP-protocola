@@ -20,12 +20,12 @@ public:
 	Socket getSocket()const;
 	void accept();
 	void accept_client();
-	bool handshake()const;
+	bool handshake();
 private:
 	Socket connection_socket;
 	unsigned free_port = 8000;
 	unsigned activeClients = 0;
-	
+	CesarEncriptor *encriptor;
 };
 
 //obrada komandi:
@@ -154,7 +154,7 @@ void Server::accept_client(){
 
 }
 
-bool Server::handshake() const {
+bool Server::handshake() {
 	
 	std::string private_key = "server_pr1v4t3_k3y";
 	std::string public_key = "server_pubL1c_k3y";
@@ -162,13 +162,13 @@ bool Server::handshake() const {
 	//phase 1
 	std::string hello_client = connection_socket.recvData();
 
-	std::cout << "Hello from client: " << hello_client;
-
+	//std::cout << "Hello from client: " << hello_client;
+	log("Hello from client:");
+	log(hello_client);
 	//ovde se parsira hello_client i dobiju se informacije o tome koji se
 	//algoritam koristi za enkripciju i Rand number za generisanje kljuca 
 
 	auto hello_client_struct = json::parse(hello_client);
-	
 	
 
 	if(hello_client_struct["hello_msg"]=="hello server"){
@@ -178,6 +178,12 @@ bool Server::handshake() const {
 		return -1;
 	}
 	
+	if(hello_client_struct["encription"] == "CesarEncription"){
+		encriptor = new CesarEncriptor();
+	}
+	
+
+
 	unsigned r = rand() % 360;
 	
  	json to_client = {
@@ -209,8 +215,7 @@ bool Server::handshake() const {
 	//phase 3
 	std::string client_certificate = connection_socket.recvData();
 
-	std::cout << client_certificate;
-	
+	log(client_certificate);
 	//todo check client certificate
 
 
@@ -229,7 +234,7 @@ bool Server::handshake() const {
 
 int main(){
 	Server server;
-	
+	//server.setEncritionMethod();
 	server.acceptNewClient();
 	server.getSocket().listen();
 

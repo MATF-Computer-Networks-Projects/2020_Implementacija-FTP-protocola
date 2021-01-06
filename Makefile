@@ -13,10 +13,6 @@ client.o: src/client.cpp headers/client.hpp
 server.o: src/server.cpp headers/server.hpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-encriptor.o: src/encriptor.cpp headers/encriptor.hpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-
 
 
 .PHONY:

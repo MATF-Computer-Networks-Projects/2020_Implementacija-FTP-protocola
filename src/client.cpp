@@ -99,11 +99,10 @@ bool Client::handshake() const {
 	struct_message["hello_msg"] = "hello server";
 	struct_message["random"] = std::__cxx11::to_string(r);
 	struct_message["protocol"] = "1";
-	struct_message["encription"] = "1";
+	struct_message["encription"] = "CesarEncription";
 	
-	std::cout << struct_message.dump();
-	sendData(struct_message.dump());
-	//sendData("HELLO:HELLO SERVER;PROTOCOL:1; RANDOM:" + std::__cxx11::to_string(r) + ";ENCRIPTION:1");
+	log(struct_message.dump());
+	sendData(struct_message);
 	
 	std::string recvd = connection_socket.recvData();
 	std::cout << "recvd:[" << recvd;
@@ -111,7 +110,6 @@ bool Client::handshake() const {
 	
 	json s = json::parse(recvd);
 	
-	//auto hello_server_struct = json::parse(recvd);
 	std::cout << s;
 
 	//ovde ide obrada hello_server

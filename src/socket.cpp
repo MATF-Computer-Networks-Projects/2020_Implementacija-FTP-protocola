@@ -18,9 +18,10 @@
 #define BACKLOG 5
 #define BUFFSIZE 255
 
+#define log(X) do{std::cout << X << '\n';}while(0);
 
 using namespace nlohmann;
-
+Encriptor *theE = new CesarEncriptor();
 class Socket {
 	public:
 		bool connect(const std::string &IP, unsigned port);
@@ -95,8 +96,13 @@ unsigned Socket::sendData(const json &data)const {
 	
 	std::string json_string(data.dump());
 	
-	std::cout << "sock:sendData(json):";
-	std::cout << data;
+	log("sendData(json):");
+	log(data);
+	//da li je definisan encriptor i ako jeste onda sifruj poruke
+	std::string enc_msg(theE->encrypt(json_string));
+	log(enc_msg); //enkriptovana poruka ne moze da stigne 
+	log("posle dekrpicije");
+	log(theE->decrypt(enc_msg));
 	if(send(dataFd, json_string.c_str() ,json_string.length(), 0) < 0){
 		perror("send:failed");
 		return -1;		
@@ -174,9 +180,14 @@ std::string Socket::recvData() const {
 	
 	//std::cout << "socket:buff=" << buff << "]\n";
 	///std::cout << "Soket procitani karakteri: " << chars_read;
-	if(chars_read==0) return "";
+	log("recvData():");
+	log(buff); //ovde treba da se pojavi
 
+	if(chars_read==0) return "";
 	return std::string(buff);
+	//return theE->decrypt(std::string(buff));
+	
+	 
 }
 char * Socket::recvdata() const {
 	
