@@ -96,6 +96,7 @@ unsigned Socket::sendData(const json &data)const {
 	std::string json_string(data.dump());
 	
 	std::cout << "sock:sendData(json):";
+	std::cout << data;
 	if(send(dataFd, json_string.c_str() ,json_string.length(), 0) < 0){
 		perror("send:failed");
 		return -1;		

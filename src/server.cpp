@@ -186,7 +186,7 @@ bool Server::handshake() const {
 		{"random", "r"},
 		{"encription", "1"}
 	};
-	sendData(to_client.dump());
+	sendData(to_client);
 	//sendData("HELLO:HELLO CLIENT;PROTOCOL:1; RANDOM:" + std::__cxx11::to_string(r) + ";ENCRIPTION:1");
 
 	//phase 1 end
@@ -198,7 +198,7 @@ bool Server::handshake() const {
 		{"public_key", public_key},
 		{"request", "certificate"}
 	};
-	sendData(cert_key.dump());
+	sendData(cert_key);
 
 	//sendData("CERTIFICATE:server_certificate;public_key:" + public_key + ";REQUEST:certificate");
 	
@@ -219,7 +219,9 @@ bool Server::handshake() const {
 
 	std::cout <<"\nhashed data:" << hashed_data;
 
+	auto hashed_json = json::parse(hashed_data);
 
+	std::cout << "DATA: " << hashed_json["data"];
 
 
 	return true;

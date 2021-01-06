@@ -9,6 +9,7 @@ public:
 	bool connect(const std::string& IP, const unsigned port);
 	bool closeConnection() const;
 	unsigned sendData(const std::string & data)const;
+	unsigned sendData(const json &data)const;
 	bool requestFile(const std::string &file_name)const;
 	bool handshake()const;
 private:
@@ -21,11 +22,11 @@ bool Client::connect(const std::string& IP, const unsigned port){
 	return true;
 }
 
-/*
+
 unsigned Client::sendData(const json & data)const{
 	connection_socket.sendData(data);
 	return 0;
-}*/
+}
 
 
 unsigned Client::sendData(const std::string &data)const{
@@ -106,13 +107,16 @@ bool Client::handshake() const {
 	
 	std::string recvd = connection_socket.recvData();
 	std::cout << "recvd:[" << recvd;
-	auto hello_server_struct = json::parse(recvd);
-	return 0;
 	
+	
+	json s = json::parse(recvd);
+	
+	//auto hello_server_struct = json::parse(recvd);
+	std::cout << s;
 
 	//ovde ide obrada hello_server
-	if(hello_server_struct["hello_msg"]=="hello_client"){	
-		std::cout << hello_server_struct["hello_msg"] << '\n';
+	if(s["hello_msg"]=="hello_client"){	
+		std::cout << s["hello_msg"] << '\n';
 	}else{
 		std::cout << "Server hello msg error\n";
 		return -1;
@@ -138,12 +142,17 @@ bool Client::handshake() const {
 		{"certificate","client_certificate"},
 		{"public_key", public_key}
 	};
-	sendData(cert_key.dump());
+	sendData(cert_key);
 	
 	// hash
 
+	json hashed_data = {
+		{"data", "HASHEDdAATA WITH PRIVATE KEY"}
+		
+	};
+	std::cout << hashed_data["data"];
 	
-	sendData("HASHED DATA WITH CLIENTS PRIVATE KEY");
+	sendData(hashed_data);
 
 
 
